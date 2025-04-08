@@ -1,28 +1,33 @@
-# Эстимейтор - Калькулятор оценки времени задач
+# Estimator - Task Time Estimation Calculator
 
-Юмористический инструмент для разработчиков и проджект-менеджеров, который позволяет оценивать время выполнения задач с помощью различных "научно-обоснованных" методов.
+A humorous tool for developers and project managers that helps estimate task completion time using various "scientifically-backed" methods.
 
-## Особенности
+## Features
 
-- **Метод π**: Умножение первоначальной оценки на число π (3.14159...)
-- **Метод "+2 единицы"**: Добавление 2 единиц к первоначальной оценке
-- **Метод PERT**: Расчет по формуле (O + 4M + P) / 6 с вероятностными диапазонами
-- **Закон "последних 10%"**: Учет известного эффекта "90% работы выполняется за 90% времени, а остальные 10% - еще за 90% времени"
-- **Закон Хофштадтера**: "Все всегда занимает больше времени, чем вы ожидаете, даже если вы учитываете закон Хофштадтера"
-- **Комбинированный метод**: Для экстремальной перестраховки (π + 2)
-- **Расшаривание результатов**: Возможность поделиться ссылкой с конкретной оценкой
+- **π Method**: Multiply initial estimate by π (3.14159...)
+- **"+2 units" Method**: Add 2 units to your initial estimate
+- **PERT Method**: Calculate using (O + 4M + P) / 6 formula with probability ranges
+- **The "Last 10%" Law**: Account for the well-known effect where "90% of the work takes 90% of the time, and the remaining 10% takes another 90% of the time"
+- **Hofstadter's Law**: "It always takes longer than you expect, even when you take into account Hofstadter's Law"
+- **Combined Method**: For extreme caution (π + 2)
+- **Share Results**: Ability to share a link with a specific estimation
+- **Multilingual**: Supports English, Russian, and Chinese
 
-## Запуск
+## Live Demo
+
+Try it out at: [eta.lex.la](https://eta.lex.la)
+
+## Running Locally
 
 ```bash
-# Локально
+# Locally
 $ go run main.go
 
-# Или с помощью Docker
+# Or using Docker
 $ docker build -t lexfrei/estimator .
 $ docker run -p 8080:8080 lexfrei/estimator
 ```
 
-## Дисклеймер
+## Disclaimer
 
-Этот инструмент создан для развлечения и не претендует на научную точность. Любое совпадение с реальной оценкой задач является чистой случайностью... или нет? 🤔
+This tool is created for entertainment purposes and does not claim scientific accuracy. Any resemblance to actual task estimation is purely coincidental... or is it? 🤔
