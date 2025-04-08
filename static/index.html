@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Эстимейтор - научный подход к оценке времени задач</title>
+    <title>Estimator - Scientific approach to task time estimation</title>
     
-    <!-- HTMX для интерактивности -->
+    <!-- HTMX for interactivity -->
     <script src="https://unpkg.com/htmx.org@1.9.9"></script>
     
-    <!-- Alpine.js для состояния и реактивности -->
+    <!-- Alpine.js for state and reactivity -->
     <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>
     
-    <!-- Tailwind CSS для быстрой стилизации -->
+    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Локализация -->
+    <!-- Localization -->
     <script src="i18n/ru.js"></script>
     <script src="i18n/en.js"></script>
     <script src="i18n/cn.js"></script>
     
     <style>
-        /* Дополнительные стили */
+        /* Additional styles */
         .result-highlight {
             background-color: rgba(252, 211, 77, 0.3);
             transition: background-color 0.5s ease;
@@ -34,7 +34,7 @@
             display: none !important;
         }
 
-        /* Стили для языкового переключателя */
+        /* Language selector styles */
         .language-selector {
             display: flex;
             gap: 0.5rem;
@@ -66,9 +66,9 @@
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <!-- Основной контейнер -->
+    <!-- Main container -->
     <div class="container mx-auto px-4 py-8" x-data="estimationApp()" x-init="$parent.lang = currentLanguage">
-        <!-- Языковой переключатель -->
+        <!-- Language selector -->
         <div class="language-selector">
             <button 
                 @click="switchLanguage('ru'); $parent.lang = 'ru'" 
@@ -93,16 +93,16 @@
             </button>
         </div>
         
-        <!-- Заголовок -->
+        <!-- Header -->
         <header class="text-center mb-12">
             <h1 class="text-4xl font-bold text-indigo-700" x-text="t('appTitle')"></h1>
             <p class="text-xl text-gray-600 mt-2" x-text="t('appTagline')"></p>
             <p class="text-sm text-gray-500 mt-1" x-text="t('appIrony')"></p>
         </header>
         
-        <!-- Основной блок -->
+        <!-- Main content -->
         <div class="bg-white rounded-lg shadow-lg p-6 max-w-3xl mx-auto">
-            <!-- Ввод первоначальной оценки -->
+            <!-- Initial estimate input -->
             <div class="mb-8">
                 <h2 class="text-2xl font-semibold mb-4" x-text="t('initialEstimateTitle')"></h2>
                 
@@ -135,7 +135,7 @@
                 </div>
             </div>
             
-            <!-- Блок для метода PERT -->
+            <!-- PERT method parameters -->
             <div x-show="selectedMethod === 'pert'" class="mb-8 border-t pt-6">
                 <h3 class="text-xl font-semibold mb-4" x-text="t('pertParamsTitle')"></h3>
                 
@@ -175,7 +175,7 @@
                 </div>
             </div>
             
-            <!-- Выбор метода оценки -->
+            <!-- Method selection -->
             <div class="mb-8">
                 <h2 class="text-2xl font-semibold mb-4" x-text="t('selectMethodTitle')"></h2>
                 
@@ -224,7 +224,7 @@
                 </div>
             </div>
             
-            <!-- Результаты оценки -->
+            <!-- Results -->
             <div class="mb-8 border-t pt-6">
                 <h2 class="text-2xl font-semibold mb-4" x-text="t('resultTitle')"></h2>
                 
@@ -254,7 +254,7 @@
                 </div>
             </div>
             
-            <!-- Юмористический блок цитат -->
+            <!-- Wisdom quotes -->
             <div class="border-t pt-6">
                 <h3 class="text-xl font-semibold mb-4" x-text="t('wisdomTitle')"></h3>
                 
@@ -264,7 +264,7 @@
             </div>
         </div>
         
-        <!-- Подвал -->
+        <!-- Footer -->
         <footer class="mt-12 text-center text-gray-500 text-sm">
             <p x-text="t('footer')"></p>
         </footer>
@@ -273,7 +273,7 @@
     <script>
         function estimationApp() {
             return {
-                // Состояние
+                // State
                 initialEstimate: 5,
                 timeUnit: 'days',
                 selectedMethod: 'pi',
@@ -282,29 +282,29 @@
                 pertMostLikely: 5,
                 pertPessimistic: 10,
                 shareUrl: '',
-                currentLanguage: 'ru', // язык по умолчанию
+                currentLanguage: 'ru', // default language
                 
-                // При инициализации
+                // Initialization
                 init() {
-                    // Определение языка пользователя
+                    // Detect user language
                     this.detectAndSetInitialLanguage();
                     
-                    // Проверяем URL-параметры при загрузке
+                    // Check URL parameters on load
                     this.loadFromUrl();
                     
-                    // Обновляем результаты
+                    // Update results
                     this.updateResults();
                     
-                    // Устанавливаем значения PERT по умолчанию на основе начальной оценки
+                    // Set default PERT values based on initial estimate
                     this.updatePertDefaults();
                     
-                    // Обновляем заголовок страницы
+                    // Update page title
                     this.updatePageTitle();
                 },
                 
-                // Определение начального языка
+                // Detect initial language
                 detectAndSetInitialLanguage() {
-                    // Проверяем URL-параметр
+                    // Check URL parameter
                     const urlParams = new URLSearchParams(window.location.search);
                     if (urlParams.has('lang')) {
                         const lang = urlParams.get('lang');
@@ -314,14 +314,14 @@
                         }
                     }
                     
-                    // Проверяем localStorage если нет в URL
+                    // Check localStorage if not in URL
                     const savedLang = localStorage.getItem('estimator_language');
                     if (savedLang && ['ru', 'en', 'cn'].includes(savedLang)) {
                         this.currentLanguage = savedLang;
                         return;
                     }
                     
-                    // Проверяем язык браузера
+                    // Check browser language
                     const browserLang = navigator.language || navigator.userLanguage;
                     if (browserLang) {
                         if (browserLang.startsWith('zh')) {
@@ -334,7 +334,7 @@
                     }
                 },
                 
-                // Переключение языка
+                // Switch language
                 switchLanguage(lang) {
                     this.currentLanguage = lang;
                     localStorage.setItem('estimator_language', lang);
@@ -342,14 +342,14 @@
                     this.updatePageTitle();
                 },
                 
-                // Обновление заголовка страницы при переключении языка
+                // Update page title when switching language
                 updatePageTitle() {
                     const title = this.t('appTitle');
                     const tagline = this.t('appTagline');
                     document.title = `${title} - ${tagline.replace('*', '')}`;
                 },
                 
-                // Получение перевода
+                // Get translation
                 t(key) {
                     try {
                         return window.i18n[this.currentLanguage][key] || key;
@@ -358,7 +358,7 @@
                     }
                 },
                 
-                // Получаем список единиц измерения для текущего языка
+                // Get time units for current language
                 getTimeUnits() {
                     return [
                         { value: 'hours', label: this.t('hours') },
@@ -369,7 +369,7 @@
                     ];
                 },
                 
-                // Получить описание метода
+                // Get method description
                 getMethodDescription() {
                     const method = this.selectedMethod;
                     const translations = window.i18n[this.currentLanguage];
@@ -414,7 +414,7 @@
                     return '';
                 },
                 
-                // Получить случайную цитату
+                // Get random quote
                 getRandomQuote() {
                     const translations = window.i18n[this.currentLanguage];
                     if (!translations || !translations.quotes || !translations.quotes.length) {
@@ -425,11 +425,11 @@
                     return quotes[Math.floor(Math.random() * quotes.length)];
                 },
                 
-                // Загрузка параметров из URL
+                // Load parameters from URL
                 loadFromUrl() {
                     const urlParams = new URLSearchParams(window.location.search);
                     
-                    // Парсим параметры, если они есть
+                    // Parse parameters if they exist
                     if (urlParams.has('estimate')) {
                         this.initialEstimate = parseFloat(urlParams.get('estimate')) || 5;
                     }
@@ -448,7 +448,7 @@
                         }
                     }
                     
-                    // Дополнительные параметры для PERT
+                    // Additional parameters for PERT
                     if (this.selectedMethod === 'pert') {
                         if (urlParams.has('o')) {
                             this.pertOptimistic = parseFloat(urlParams.get('o')) || 3;
@@ -462,7 +462,7 @@
                     }
                 },
                 
-                // Методы
+                // Methods
                 selectMethod(method) {
                     this.selectedMethod = method;
                     
@@ -475,7 +475,7 @@
                 },
                 
                 updatePertDefaults() {
-                    // Установим значения по умолчанию для PERT на основе начальной оценки
+                    // Set default values for PERT based on initial estimate
                     this.pertMostLikely = parseInt(this.initialEstimate);
                     this.pertOptimistic = Math.max(1, Math.floor(this.initialEstimate * 0.6));
                     this.pertPessimistic = Math.ceil(this.initialEstimate * 2);
@@ -519,7 +519,7 @@
                 },
                 
                 formatNumber(value) {
-                    // Округляем до одного десятичного знака, если число не целое
+                    // Round to one decimal place if not an integer
                     return Number.isInteger(value) ? value : parseFloat(value.toFixed(1));
                 },
                 
@@ -534,34 +534,34 @@
                         return this.timeUnit;
                     }
                     
-                    // Правильное склонение единиц измерения
+                    // Proper unit form based on number
                     let formattedValue = this.formatNumber(value);
                     let lastDigit = formattedValue.toString().split('.')[0].slice(-1);
                     let lastTwoDigits = formattedValue.toString().split('.')[0].slice(-2);
                     
-                    // Для русского языка используем сложное склонение
+                    // For Russian language, use complex declension
                     if (this.currentLanguage === 'ru') {
-                        // Особые случаи для чисел от 11 до 19
+                        // Special cases for numbers 11-19
                         if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
-                            return unitForms[2]; // Множественная форма
+                            return unitForms[2]; // Plural form
                         }
                         
-                        // Стандартные правила для остальных чисел
+                        // Standard rules for other numbers
                         if (lastDigit == 1) {
-                            return unitForms[0]; // Единственная форма
+                            return unitForms[0]; // Singular form
                         } else if (lastDigit >= 2 && lastDigit <= 4) {
-                            return unitForms[1]; // Малая множественная форма
+                            return unitForms[1]; // Few form
                         } else {
-                            return unitForms[2]; // Множественная форма
+                            return unitForms[2]; // Plural form
                         }
                     } else {
-                        // Для английского и других языков просто используем единственное/множественное число
+                        // For English and other languages, just use singular/plural
                         return formattedValue == 1 ? unitForms[0] : unitForms[1];
                     }
                 },
                 
                 flashResult() {
-                    // Анимация мигания результата
+                    // Result flashing animation
                     const el = this.$refs.resultContainer;
                     el.classList.add('result-highlight-flash');
                     
@@ -570,36 +570,36 @@
                     }, 300);
                 },
                 
-                // Создание и копирование ссылки для расшаривания
+                // Create and copy share link
                 copyShareLink() {
-                    // Создаем URL с текущими параметрами
+                    // Create URL with current parameters
                     const url = new URL(window.location.href.split('?')[0]);
                     url.searchParams.append('estimate', this.initialEstimate);
                     url.searchParams.append('unit', this.timeUnit);
                     url.searchParams.append('method', this.selectedMethod);
                     url.searchParams.append('lang', this.currentLanguage);
                     
-                    // Добавляем дополнительные параметры для PERT, если этот метод выбран
+                    // Add additional parameters for PERT if selected
                     if (this.selectedMethod === 'pert') {
                         url.searchParams.append('o', this.pertOptimistic);
                         url.searchParams.append('m', this.pertMostLikely);
                         url.searchParams.append('p', this.pertPessimistic);
                     }
                     
-                    // Записываем ссылку в состояние
+                    // Save URL to state
                     this.shareUrl = url.toString();
                     
-                    // Копируем в буфер обмена
+                    // Copy to clipboard
                     navigator.clipboard.writeText(this.shareUrl)
                         .then(() => {
-                            // Показываем уведомление о копировании на 2 секунды
+                            // Show copy notification for 2 seconds
                             setTimeout(() => {
                                 this.shareUrl = '';
                             }, 2000);
                         })
                         .catch(err => {
                             console.error('Could not copy text: ', err);
-                            // Если не удалось скопировать, предлагаем пользователю скопировать самостоятельно
+                            // If copy failed, let user copy manually
                             alert(`${this.t('linkCopied')}: ${this.shareUrl}`);
                         });
                 }
