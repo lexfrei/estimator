@@ -1,0 +1,14 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Misc
+README.md
+.DS_Store
+
+# Binaries
+/estimator

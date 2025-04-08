@@ -1,0 +1,20 @@
+# Executable
+/estimator
+
+# Go build and test
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Dependency directories
+/vendor/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
