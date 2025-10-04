@@ -1,7 +1,7 @@
 ############################
 # STEP 1: Build executable
 ############################
-FROM golang:1.24-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Install git and CA certificates for fetching dependencies
 RUN apk update && apk add --no-cache git ca-certificates upx && update-ca-certificates
