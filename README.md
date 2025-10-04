@@ -23,9 +23,9 @@ Try it out at: [eta.lex.la](https://eta.lex.la)
 # Locally
 $ go run main.go
 
-# Or using Docker
-$ docker build -t lexfrei/estimator .
-$ docker run -p 8080:8080 lexfrei/estimator
+# Or using Podman
+$ podman build --file build/Containerfile --tag lexfrei/estimator .
+$ podman run --publish 8080:8080 lexfrei/estimator
 ```
 
 ## Disclaimer

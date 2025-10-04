@@ -440,43 +440,29 @@
                 updateResults() {
                     let estimate = parseFloat(this.initialEstimate);
 
-                    // Convert everything to days internally for consistency
-                    const unitToDays = {
-                        hours: 1 / 8,
-                        days: 1,
-                        weeks: 5,
-                        months: 21,
-                        quarters: 63
-                    };
-
-                    const factor = unitToDays[this.timeUnit] || 1;
-
-                    let resultDays;
                     switch (this.selectedMethod) {
                         case 'pi':
-                            resultDays = estimate * Math.PI;
+                            this.result = estimate * Math.PI;
                             break;
                         case 'plus2':
-                            resultDays = estimate + 2;
+                            this.result = estimate + 2;
                             break;
                         case 'pert':
                             let o = parseFloat(this.pertOptimistic);
                             let m = parseFloat(this.pertMostLikely);
                             let p = parseFloat(this.pertPessimistic);
-                            resultDays = (o + 4 * m + p) / 6;
+                            this.result = (o + 4 * m + p) / 6;
                             break;
                         case 'last10':
-                            resultDays = estimate + estimate * 0.9;
+                            this.result = estimate + estimate * 0.9;
                             break;
                         case 'hofstadter':
-                            resultDays = estimate * 2;
+                            this.result = estimate * 2;
                             break;
                         case 'combined':
-                            resultDays = estimate * Math.PI + 2;
+                            this.result = estimate * Math.PI + 2;
                             break;
                     }
-
-                    this.result = resultDays / factor;
                 },
 
                 formatResult(value) {
