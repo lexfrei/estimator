@@ -1,7 +1,9 @@
 package main
 
 import (
+	"compress/gzip"
 	"embed"
+	"io"
 	"io/fs"
 	"log"
 	"net/http"
@@ -9,8 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/css"
 	"github.com/tdewolff/minify/v2/html"
@@ -21,101 +21,136 @@ import (
 var staticFiles embed.FS
 
 func main() {
-	// Initialize Echo
-	e := echo.New()
-	e.HideBanner = true
-
-	// Initialize minifier
 	m := minify.New()
 	m.AddFunc("text/html", html.Minify)
 	m.AddFunc("text/css", css.Minify)
 	m.AddFunc("application/javascript", js.Minify)
 
-	// Middleware
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
-		Level: 5,
-	}))
-
-	// Read and minify index.html content
 	indexHTMLBytes, err := staticFiles.ReadFile("static/index.html")
 	if err != nil {
 		log.Fatalf("Failed to read index.html: %v", err)
 	}
 
-	// Minify HTML
 	indexHTML, err := m.String("text/html", string(indexHTMLBytes))
 	if err != nil {
 		log.Printf("Warning: failed to minify HTML: %v", err)
 		indexHTML = string(indexHTMLBytes)
 	}
 
-	// Handler for index.html
-	e.GET("/", func(c echo.Context) error {
-		// Generate ETag based on content
-		etag := "\"" + strconv.FormatInt(int64(len(indexHTML)), 10) + "-" + 
-			strconv.FormatInt(time.Now().Unix()/86400, 10) + "\""
-		
-		// Handle conditional requests (If-None-Match)
-		ifNoneMatch := c.Request().Header.Get("If-None-Match")
-		if ifNoneMatch == etag {
-			c.Response().Header().Set("ETag", etag)
-			return c.NoContent(http.StatusNotModified)
-		}
-
-		// Set caching headers
-		c.Response().Header().Set("Content-Type", echo.MIMETextHTMLCharsetUTF8)
-		c.Response().Header().Set("ETag", etag)
-		c.Response().Header().Set("Cache-Control", "public, max-age=86400, s-maxage=31536000")
-		c.Response().Header().Set("Vary", "Accept-Encoding")
-		
-		expires := time.Now().Add(time.Hour * 24).Format(time.RFC1123)
-		c.Response().Header().Set("Expires", expires)
-
-		return c.HTML(http.StatusOK, indexHTML)
-	})
-
-	// Middleware for JS file minification
-	jsMinMiddleware := func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			// Is this a JavaScript file?
-			if strings.HasSuffix(c.Request().URL.Path, ".js") {
-				// Get file by path
-				path := strings.TrimPrefix(c.Request().URL.Path, "/")
-				content, err := staticFiles.ReadFile("static/" + path)
-				if err != nil {
-					return next(c)
-				}
-
-				// Minify JavaScript
-				minified, err := m.Bytes("application/javascript", content)
-				if err != nil {
-					log.Printf("Warning: failed to minify JS %s: %v", path, err)
-					return next(c)
-				}
-
-				// Return minified JavaScript with caching headers
-				c.Response().Header().Set("Content-Type", "application/javascript")
-				c.Response().Header().Set("Cache-Control", "public, max-age=604800") // Cache for 7 days
-				return c.Blob(http.StatusOK, "application/javascript", minified)
-			}
-			return next(c)
-		}
-	}
-
-	// Setup static files
 	staticFS, err := fs.Sub(staticFiles, "static")
 	if err != nil {
 		log.Fatalf("Failed to create sub filesystem: %v", err)
 	}
 
-	// Handler for i18n static files with minification
-	e.GET("/i18n/*", jsMinMiddleware(echo.WrapHandler(http.StripPrefix("/i18n/", http.FileServer(http.FS(staticFS))))))
+	mux := http.NewServeMux()
 
-	// Start server
+	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+		etag := "\"" + strconv.FormatInt(int64(len(indexHTML)), 10) + "-" +
+			strconv.FormatInt(time.Now().Unix()/86400, 10) + "\""
+
+		if r.Header.Get("If-None-Match") == etag {
+			w.Header().Set("ETag", etag)
+			w.WriteHeader(http.StatusNotModified)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Header().Set("ETag", etag)
+		w.Header().Set("Cache-Control", "public, max-age=86400, s-maxage=31536000")
+		w.Header().Set("Vary", "Accept-Encoding")
+		w.Header().Set("Expires", time.Now().Add(24*time.Hour).Format(time.RFC1123))
+		w.WriteHeader(http.StatusOK)
+		io.WriteString(w, indexHTML)
+	})
+
+	mux.Handle("GET /i18n/", http.StripPrefix("/i18n/", jsMinHandler(m, staticFS)))
+
+	handler := withGzip(withRecover(withLogger(mux)))
+
 	log.Println("Starting server on :8080...")
-	if err := e.Start(":8080"); err != http.ErrServerClosed {
+	server := &http.Server{
+		Addr:              ":8080",
+		Handler:           handler,
+		ReadHeaderTimeout: 10 * time.Second,
+	}
+	if err := server.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatal("Server error: ", err)
 	}
+}
+
+func jsMinHandler(m *minify.M, staticFS fs.FS) http.Handler {
+	fileServer := http.FileServer(http.FS(staticFS))
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.HasSuffix(r.URL.Path, ".js") {
+			fileServer.ServeHTTP(w, r)
+			return
+		}
+
+		path := strings.TrimPrefix(r.URL.Path, "/")
+		content, err := fs.ReadFile(staticFS, path)
+		if err != nil {
+			fileServer.ServeHTTP(w, r)
+			return
+		}
+
+		minified, err := m.Bytes("application/javascript", content)
+		if err != nil {
+			log.Printf("Warning: failed to minify JS %s: %v", path, err)
+			fileServer.ServeHTTP(w, r)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/javascript")
+		w.Header().Set("Cache-Control", "public, max-age=604800")
+		w.Write(minified)
+	})
+}
+
+func withLogger(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		next.ServeHTTP(w, r)
+		log.Printf("%s %s %s", r.Method, r.URL.Path, time.Since(start))
+	})
+}
+
+func withRecover(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Printf("panic: %v", err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			}
+		}()
+		next.ServeHTTP(w, r)
+	})
+}
+
+type gzipResponseWriter struct {
+	io.Writer
+	http.ResponseWriter
+}
+
+func (w gzipResponseWriter) Write(b []byte) (int, error) {
+	return w.Writer.Write(b)
+}
+
+func withGzip(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		gz, err := gzip.NewWriterLevel(w, 5)
+		if err != nil {
+			next.ServeHTTP(w, r)
+			return
+		}
+		defer gz.Close()
+
+		w.Header().Set("Content-Encoding", "gzip")
+		w.Header().Del("Content-Length")
+		next.ServeHTTP(gzipResponseWriter{Writer: gz, ResponseWriter: w}, r)
+	})
 }
