@@ -10,9 +10,9 @@ ARG TARGETARCH
 # Install git and CA certificates for fetching dependencies
 RUN apk update && \
     apk add --no-cache \
-        git \
-        ca-certificates \
-        upx && \
+        git=2.52.0-r0 \
+        ca-certificates=20260413-r0 \
+        upx=5.0.2-r0 && \
     update-ca-certificates
 
 # Create appuser
