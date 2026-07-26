@@ -13,7 +13,7 @@ RUN apk update && \
         # renovate: datasource=repology depName=alpine_3_23/git versioning=loose
         git=2.52.0-r0 \
         # renovate: datasource=repology depName=alpine_3_23/ca-certificates versioning=loose
-        ca-certificates=20260413-r0 \
+        ca-certificates=20260611-r0 \
         # renovate: datasource=repology depName=alpine_3_23/upx versioning=loose
         upx=5.0.2-r0 && \
     update-ca-certificates
