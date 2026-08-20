@@ -1,6 +1,6 @@
 module github.com/lexfrei/estimator
 
-go 1.26.6
+go 1.27.0
 
 require github.com/tdewolff/minify/v2 v2.24.17
 
