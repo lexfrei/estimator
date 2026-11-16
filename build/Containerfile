@@ -11,7 +11,7 @@ ARG TARGETARCH
 RUN apk update && \
     apk add --no-cache \
         # renovate: datasource=repology depName=alpine_3_24/git versioning=loose
-        git=2.54.0-r0 \
+        git=2.54.1-r0 \
         # renovate: datasource=repology depName=alpine_3_24/ca-certificates versioning=loose
         ca-certificates=20261020-r0 \
         # renovate: datasource=repology depName=alpine_3_24/upx versioning=loose
